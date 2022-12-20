@@ -11,7 +11,26 @@ $pid = "";
 
 if (isset($_GET['act'])) {
     if ($_GET['act'] == "auth") {
-        #working Anya
+        header("Content-Type: application/json");
+        $login = $_GET['login'];
+        $passwd = md5($_POST['password']);
+        $usr = $db->select('users', "id = '" . $login . "' AND password = '" . $passwd . "'");
+        if ($usr['password'] == $passwd) {
+            $result['answer'] = "OK";
+            $group = $db->select('groups', "id = '" . $usr['group_id'] . "'");
+            $result['group'] = $group['name'];
+            $result['userid'] = (int)$usr['id'];
+            $result['token'] = rand('10000000', '99999999');
+            if (file_exists("avatars/" . $usr['id'] . ".jpg")) $result['avatar_link'] = "https://eis.it-lyceum24.ru/avatars/" . $usr['id'] . ".jpg";
+            else $result['avatar_link'] = "https://eis.it-lyceum24.ru/avatars/placeholder.png";
+            $result['fio'] = $userTools->fio($usr['id'], false);
+            $result['uid'] = $usr['id'];
+            $ug = $db->select('periods', "id = '" . $tool->getGlobal('default_period') . "'");
+            $result['uch_god'] = $ug['name'];
+            $data['token'] = (int)$result['token'];
+            $u = $db->update($data, 'users', "id = '" . $_GET['login'] . "'");
+        } else $result['answer'] = "AUTH_ERROR";
+        echo json_encode($result);
     } else if ($_GET['act'] == "request") {
         echo 'INDEV';
     } else if ($_GET['act'] == "notify") {
