@@ -24,6 +24,8 @@ class UserTools
                 $_SESSION["login_time"] = time();
                 date_default_timezone_set($tool->getGlobal('tz'));
                 $_SESSION["logged_in"] = 1;
+                $data2['token2'] = "'" . bin2hex(random_bytes(16)) . "'";
+                $db->update($data2, 'users', "id = '" . $username . "'");
                 return 1;
             }
         } else {
@@ -33,6 +35,7 @@ class UserTools
 
     public function logout()
     {
+        $db = new DB();
         unset($_SESSION['user']);
         unset($_SESSION['login_time']);
         unset($_SESSION['logged_in']);
@@ -58,6 +61,14 @@ class UserTools
         $connection = $db->connect_get();
         $result = $db->select('users', "id = $id");
         return new User($result);
+    }
+
+    public function fio($id, $rid = true){
+        $db = new DB();
+        $connection = $db->connect_get();
+        $result = $db->select('users', "id = $id");
+        if ($rid) return '('.$result['id']. ') '. $result['f'].' '.$result['i'].' '.$result['o'];
+        else return $result['f'].' '.$result['i'].' '.$result['o'];
     }
 
     public function get_name($id){
